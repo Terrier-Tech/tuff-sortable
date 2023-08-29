@@ -1,5 +1,6 @@
 import {NoState, Part, PartTag} from "tuff-core/parts"
 import './style.css'
+import SortablePlugin from "../src/sortable-plugin.ts"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Types
@@ -32,7 +33,7 @@ const RowContainer: ContainerDef = {
     blocks: []
 }
 
-const rowBases = ['80px', '50%', 'auto', '25%', '160px']
+const rowBases = ['80px', '50%', 'auto', '25%', '160px'] as const
 
 for (let i=0; i< numBlocks; i++) {
     const basis = rowBases[i % rowBases.length]
@@ -67,6 +68,8 @@ for (let i = 0; i < numBlocks; i++) {
 export default class App extends Part<NoState> {
 
     async init() {
+        this.makePlugin(SortablePlugin, {containerClass: 'flex-container', targetClass: 'block'})
+
         this.dirty()
     }
 
