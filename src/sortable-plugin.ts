@@ -41,4 +41,8 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
         elem.addEventListener('mousedown', this.onMouseDown)
     }
 
+    get targetClass(): string {
+        return this.state.targetClass
+    }
+
 }
