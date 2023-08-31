@@ -67,13 +67,12 @@ h1 {
         & label {
             cursor: move;
         }
-        &.tuff-sortable-drop-target {
-            background-color: var(--highlight-color);
-            color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
         &.tuff-sortable-dragging {
             opacity: 0.5;
         }
+    }
+    .tuff-sortable-drop-cursor {
+        background-color: var(--primary-color);
+        border-radius: 4px;
     }
 }
