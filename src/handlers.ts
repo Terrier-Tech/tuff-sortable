@@ -13,7 +13,7 @@ type DropTarget = {
     rect: Rect
     index: number
     insertDirection?: InsertDirection
-    insertIndex?: number
+    insertRelative?: 'before' | 'after'
 }
 
 type FlexDirection = 'row' | 'column' | 'row-reverse' | 'column-reverse'
@@ -22,6 +22,9 @@ const dragHighlightClass = 'tuff-sortable-dragging'
 const dropCursorClass = 'tuff-sortable-drop-cursor'
 const cursorSize = 16
 
+/**
+ * Once a drag operation has begun, the DragHandler listens to all mouse events to perform the drag interaction.
+ */
 export class DragHandler {
 
     anchor!: Vec
@@ -33,6 +36,7 @@ export class DragHandler {
     targetRect: Rect = {x: 0, y: 0, width: 0, height: 0}
 
     flexDirection!: FlexDirection
+    dragIndex!: number
 
     constructor(readonly plugin: SortablePlugin, readonly container: HTMLElement, readonly target: HTMLElement, evt: MouseEvent) {
         this.anchor = {
@@ -61,6 +65,9 @@ export class DragHandler {
 
         this.onMouseUp = (evt: MouseEvent) => {
             log.info(`Drag mouse up`, evt)
+            if (this.dropTarget) {
+                this.performDrop(this.dropTarget)
+            }
             this.dispose()
         }
 
@@ -73,6 +80,9 @@ export class DragHandler {
             if (elem instanceof HTMLElement) {
                 const rect = elem.getBoundingClientRect()
                 this.possibleDropTargets.push({elem, rect, index})
+                if (elem == target) {
+                    this.dragIndex = index
+                }
             }
         })
 
@@ -104,13 +114,13 @@ export class DragHandler {
             }
             else {
                 this.computeInsert(this.dropTarget, diffedRect)
-                log.info(`Insert at ${this.dropTarget.insertDirection} (index ${this.dropTarget.insertIndex})`)
+                log.info(`Insert at ${this.dropTarget.insertDirection} (index ${this.dropTarget.insertRelative})`)
             }
         }
     }
 
     /**
-     * Compute the insertIndex and insertDirection for the given drop target
+     * Compute the insertRelative and insertDirection for the given drop target
      * @param dropTarget
      * @param diffedRect the target's rect offset by the interaction diff
      */
@@ -121,18 +131,18 @@ export class DragHandler {
             if (diffedCenter.x >= dropCenter.x) { // it's to the right
                 dropTarget.insertDirection = 'right'
                 if (this.flexDirection == 'row-reverse') {
-                    dropTarget.insertIndex = dropTarget.index
+                    dropTarget.insertRelative = 'before'
                 }
                 else { // row
-                    dropTarget.insertIndex = dropTarget.index + 1
+                    dropTarget.insertRelative = 'after'
                 }
             }
             else { // it's to the left
                 dropTarget.insertDirection = 'left'
                 if (this.flexDirection == 'row-reverse') {
-                    dropTarget.insertIndex = dropTarget.index + 1
+                    dropTarget.insertRelative = 'after'
                 } else { // row
-                    dropTarget.insertIndex = dropTarget.index
+                    dropTarget.insertRelative = 'before'
                 }
             }
         }
@@ -140,28 +150,34 @@ export class DragHandler {
             if (diffedCenter.y >= dropCenter.y) { // it's below
                 dropTarget.insertDirection = 'bottom'
                 if (this.flexDirection == 'column-reverse') {
-                    dropTarget.insertIndex = dropTarget.index
+                    dropTarget.insertRelative = 'before'
                 } else { // column
-                    dropTarget.insertIndex = dropTarget.index + 1
+                    dropTarget.insertRelative = 'after'
                 }
             }
             else { // it's above
                 dropTarget.insertDirection = 'top'
                 if (this.flexDirection == 'column-reverse') {
-                    dropTarget.insertIndex = dropTarget.index + 1
+                    dropTarget.insertRelative = 'after'
                 } else { // column
-                    dropTarget.insertIndex = dropTarget.index
+                    dropTarget.insertRelative = 'before'
                 }
             }
         }
         this.addDropCursor(dropTarget)
     }
 
-
+    /**
+     * Remove the cursor from the DOM.
+     */
     clearCursor() {
         this.container.querySelector(`.${dropCursorClass}`)?.remove()
     }
 
+    /**
+     * Add a cursor to the container based on the dropTarget offset position and insertDirection.
+     * @param dropTarget
+     */
     addDropCursor(dropTarget: DropTarget) {
         const rect = {
             x: dropTarget.elem.offsetLeft,
@@ -171,6 +187,7 @@ export class DragHandler {
         }
         const box = {...rect}
 
+        // adjust the box size and position based on the insert direction
         switch (dropTarget.insertDirection) {
             case 'left':
                 box.x -= cursorSize
@@ -190,6 +207,7 @@ export class DragHandler {
                 break
         }
 
+        // create the actual cursor element and append it to the container
         const cursor = Html.createElement('div', div => {
             div.class(dropCursorClass)
             div.css({
@@ -204,6 +222,21 @@ export class DragHandler {
         this.container.append(cursor)
     }
 
+    performDrop(dropTarget: DropTarget) {
+        log.info(`Moving drag target ${dropTarget.insertRelative} drop target ${dropTarget.index}`)
+        if (dropTarget.insertRelative == 'before') {
+            // move the drag target to before the drop target
+            dropTarget.elem.before(this.target)
+        }
+        else {
+            // move the drag target to after the drop target
+            dropTarget.elem.after(this.target)
+        }
+    }
+
+    /**
+     * Clear all event handlers, resets the style on the target, and ensure the cursor is removed.
+     */
     dispose() {
         this.target.style.transform = ''
         this.target.classList.remove(dragHighlightClass)

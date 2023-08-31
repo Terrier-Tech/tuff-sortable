@@ -33,7 +33,7 @@ const RowContainer: ContainerDef = {
     blocks: []
 }
 
-const rowBases = ['80px', '50%', 'auto', '25%', '160px'] as const
+const rowBases = ['80px', '40%', 'auto', '20%', '160px'] as const
 
 for (let i=0; i< numBlocks; i++) {
     const basis = rowBases[i % rowBases.length]
