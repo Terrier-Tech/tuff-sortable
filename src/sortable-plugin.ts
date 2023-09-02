@@ -8,6 +8,7 @@ const log = new Logger("SortablePlugin")
 export type SortableOptions = {
     containerClass: string
     targetClass: string
+    onSorted: (plugin: SortablePlugin, container: HTMLElement, children: HTMLElement[]) => any
 }
 
 
@@ -43,6 +44,15 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
 
     get targetClass(): string {
         return this.state.targetClass
+    }
+
+    /**
+     * The handler calls this, which then calls the state callback.
+     * @param container
+     * @param children
+     */
+    onSorted(container: HTMLElement, children: HTMLElement[]) {
+        this.state.onSorted(this, container, children)
     }
 
 }

@@ -3,6 +3,7 @@ import SortablePlugin from "./sortable-plugin.ts"
 import {Logger} from "tuff-core/logging.ts"
 import Html from 'tuff-core/html.ts'
 import Boxes, { Box } from 'tuff-core/boxes.ts'
+import Arrays from 'tuff-core/arrays.ts'
 
 const log = new Logger("Handlers")
 
@@ -20,13 +21,14 @@ type FlexDirection = 'row' | 'column' | 'row-reverse' | 'column-reverse'
 
 const dragHighlightClass = 'tuff-sortable-dragging'
 const dropCursorClass = 'tuff-sortable-drop-cursor'
-const cursorSize = 16
+const minCursorSize = 8
 
 /**
  * Once a drag operation has begun, the DragHandler listens to all mouse events to perform the drag interaction.
  */
 export class DragHandler {
 
+    cursorSize!: number
     anchor!: Vec
     onMouseMove!: (evt: MouseEvent) => void
     onMouseUp!: (evt: MouseEvent) => void
@@ -52,8 +54,6 @@ export class DragHandler {
             throw `Sortable containers must be display: flex, not ${computedStyle.get('display')}`
         }
         this.flexDirection = computedStyle.get('flex-direction')?.toString() as FlexDirection
-
-        log.info(`Starting DragHandler for ${this.flexDirection} container at ${this.anchor.x},${this.anchor.y}`, container, dragTarget, evt)
 
         // capture all mouse move events while this interaction is happening
         this.onMouseMove = (evt: MouseEvent) => {
@@ -86,6 +86,15 @@ export class DragHandler {
             }
         })
 
+        // and compute the gap by finding the minimum distance between boxes
+        const boxes = this.possibleDropTargets.map(dt => dt.box)
+        const distances = Arrays.compact(Arrays.mapPairs(boxes, (b1, b2) => {
+            const distance = Boxes.distance(b1, b2)
+            return distance > 0 ? distance : null // ignore overlapping boxes
+        }))
+        this.cursorSize = Math.max(Arrays.min(distances), minCursorSize)
+
+        log.info(`Starting DragHandler for ${this.flexDirection} container with cursor size ${this.cursorSize}px at ${this.anchor.x},${this.anchor.y}`, container, dragTarget, evt)
     }
 
     /**
@@ -114,7 +123,7 @@ export class DragHandler {
             }
             else {
                 this.computeInsert(this.dropTarget, diffedBox)
-                log.info(`Insert at ${this.dropTarget.insertDirection} (index ${this.dropTarget.insertRelative})`)
+                log.info(`Insert ${this.dropTarget.insertRelative} ${this.dropTarget.insertDirection} of ${this.dropTarget.index}`)
             }
         }
     }
@@ -189,20 +198,20 @@ export class DragHandler {
         // adjust the box size and position based on the insert direction
         switch (dropTarget.insertDirection) {
             case 'left':
-                box.x -= cursorSize
-                box.width = cursorSize
+                box.x -= this.cursorSize
+                box.width = this.cursorSize
                 break
             case 'right':
                 box.x += box.width
-                box.width = cursorSize
+                box.width = this.cursorSize
                 break
             case 'top':
-                box.y -= cursorSize
-                box.height = cursorSize
+                box.y -= this.cursorSize
+                box.height = this.cursorSize
                 break
             case 'bottom':
                 box.y += box.height
-                box.height = cursorSize
+                box.height = this.cursorSize
                 break
         }
 
@@ -231,6 +240,10 @@ export class DragHandler {
             // move the drag target to after the drop target
             dropTarget.elem.after(this.dragTarget)
         }
+
+        // notify the plugin callback
+        const children = [...this.container.querySelectorAll(`.${this.plugin.targetClass}`).values()] as HTMLElement[]
+        this.plugin.onSorted(this.container, children)
     }
 
     /**

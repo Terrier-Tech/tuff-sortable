@@ -1,6 +1,9 @@
 import {NoState, Part, PartTag} from "tuff-core/parts"
 import './style.css'
 import SortablePlugin from "../src/sortable-plugin.ts"
+import {Logger} from "tuff-core/logging.ts"
+
+const log = new Logger("App")
 
 ////////////////////////////////////////////////////////////////////////////////
 // Types
@@ -68,7 +71,13 @@ for (let i = 0; i < numBlocks; i++) {
 export default class App extends Part<NoState> {
 
     async init() {
-        this.makePlugin(SortablePlugin, {containerClass: 'flex-container', targetClass: 'block'})
+        this.makePlugin(SortablePlugin, {
+            containerClass: 'flex-container',
+            targetClass: 'block',
+            onSorted: (plugin, container, children) => {
+                log.info(`Sorted children`, plugin, container, children)
+            }
+        })
 
         this.dirty()
     }
