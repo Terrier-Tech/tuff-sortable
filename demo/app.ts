@@ -2,6 +2,7 @@ import {NoState, Part, PartTag} from "tuff-core/parts"
 import './style.css'
 import SortablePlugin from "../src/sortable-plugin.ts"
 import {Logger} from "tuff-core/logging.ts"
+import Messages from "tuff-core/messages.ts"
 
 const log = new Logger("App")
 
@@ -67,6 +68,7 @@ for (let i = 0; i < numBlocks; i++) {
 // App Part
 ////////////////////////////////////////////////////////////////////////////////
 
+const clickKey = Messages.typedKey<{index: number}>()
 
 export default class App extends Part<NoState> {
 
@@ -77,6 +79,10 @@ export default class App extends Part<NoState> {
             onSorted: (plugin, container, children) => {
                 log.info(`Sorted children`, plugin, container, children)
             }
+        })
+
+        this.onClick(clickKey, m => {
+            log.info(`Clicked block ${m.data.index}`, m)
         })
 
         this.dirty()
@@ -91,11 +97,12 @@ export default class App extends Part<NoState> {
     renderContainer(parent: PartTag, containerDef: ContainerDef) {
         parent.h2().text(containerDef.title)
         parent.div(".flex-container", container => {
-            for (const blockDef of containerDef.blocks) {
-                container.div(".block", block => {
+            containerDef.blocks.forEach((blockDef, index) => {
+                container.a(".block", block => {
                     block.label().text(blockDef.label)
                 }).css(blockDef.style)
-            }
+                    .emitClick(clickKey, {index})
+            })
         }).css(containerDef.style)
     }
 
