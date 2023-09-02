@@ -1,16 +1,28 @@
 {
   "name": "tuff-sortable",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "type": "module",
+  "files": [
+    "*"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Terrier-Tech/tuff-sortable"
+  },
   "scripts": {
     "dev": "vite",
     "check": "tsc",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "prepub": "tsc && mkdir -p dist && rm -rf dist/* && cp -a ./src/*.ts ./dist/ && cp ./package.json ./dist/ && cp ./README.md ./dist/",
+    "pub": "npm publish ./dist"
   },
   "devDependencies": {
     "typescript": "^5.0.2",
-    "vite": "^4.4.5",
+    "vite": "^4.4.5"
+  },
+  "dependencies": {
     "tuff-core": "latest"
-  }
+  },
+  "license": "MIT"
 }

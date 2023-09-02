@@ -53,6 +53,15 @@ As demonstrated above, the sortable elements can still emit standard `click` eve
 which will only occur when the sorting _doesn't_ happen during the same interaction.
 
 
+## Development
+
+To publish package changes, make sure to update the version, then run:
+
+    npm run pub
+
+Like all Tuff libraries, packages are Typescript source-only.
+
+
 ## License (MIT)
 
 &copy; 2023 <a href="https://terrier.tech">Terrier Technologies LLC</a>
