@@ -1,6 +1,6 @@
 {
   "name": "tuff-sortable",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "type": "module",
   "files": [
     "*"

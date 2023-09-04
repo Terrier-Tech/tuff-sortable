@@ -31,6 +31,8 @@ const numBlocks = 12
 
 // Row
 
+let n = 0
+
 const RowContainer: ContainerDef = {
     title: "Row",
     style: {flexDirection: 'row'},
@@ -41,8 +43,9 @@ const rowBases = ['80px', '40%', 'auto', '20%', '160px'] as const
 
 for (let i=0; i< numBlocks; i++) {
     const basis = rowBases[i % rowBases.length]
+    n += 1
     RowContainer.blocks.push({
-        label: `Block ${i}`,
+        label: `Block ${n}`,
         style: {flexBasis: basis}
     })
 }
@@ -50,15 +53,30 @@ for (let i=0; i< numBlocks; i++) {
 
 // Column
 
-const ColumnContainer: ContainerDef = {
+const columnContainer1: ContainerDef = {
     title: "Column",
     style: {flexDirection: 'column'},
     blocks: []
 }
 
 for (let i = 0; i < numBlocks; i++) {
-    ColumnContainer.blocks.push({
-        label: `Block ${i}`,
+    n += 1
+    columnContainer1.blocks.push({
+        label: `Block ${n}`,
+        style: {flexBasis: 'auto'}
+    })
+}
+
+const columnContainer2: ContainerDef = {
+    title: "Column",
+    style: {flexDirection: 'column'},
+    blocks: []
+}
+
+for (let i = 0; i < numBlocks; i++) {
+    n += 1
+    columnContainer2.blocks.push({
+        label: `Block ${n}`,
         style: {flexBasis: 'auto'}
     })
 }
@@ -74,10 +92,10 @@ export default class App extends Part<NoState> {
 
     async init() {
         this.makePlugin(SortablePlugin, {
-            containerClass: 'flex-container',
+            zoneClass: 'flex-container',
             targetClass: 'block',
-            onSorted: (plugin, container, children) => {
-                log.info(`Sorted children`, plugin, container, children)
+            onSorted: (plugin, evt) => {
+                log.info(`Sorted children`, plugin, evt)
             }
         })
 
@@ -90,12 +108,16 @@ export default class App extends Part<NoState> {
 
     render(parent: PartTag): any {
         parent.h1().text("Tuff Sortable")
+        parent.h2().text("Row")
         this.renderContainer(parent, RowContainer)
-        this.renderContainer(parent, ColumnContainer)
+        parent.h2().text("Columns")
+        parent.div('.columns', row => {
+            this.renderContainer(row, columnContainer1)
+            this.renderContainer(row, columnContainer2)
+        })
     }
 
     renderContainer(parent: PartTag, containerDef: ContainerDef) {
-        parent.h2().text(containerDef.title)
         parent.div(".flex-container", container => {
             containerDef.blocks.forEach((blockDef, index) => {
                 container.a(".block", block => {

@@ -8,6 +8,7 @@
     --color: #213547;
     color: var(--color);
     --primary-color: #54a1c2;
+    --primary-bg: #d6e8f0;
 
     font-synthesis: none;
     text-rendering: optimizeLegibility;
@@ -45,6 +46,13 @@ h1 {
     gap: 1em;
 }
 
+.columns {
+    display: flex;
+    gap: 1em;
+    > div {
+        flex: 1 1 auto;
+    }
+}
 
 .flex-container {
     display: flex;
@@ -55,6 +63,12 @@ h1 {
     border: 1px solid currentColor;
     background-color: #f2f2f2;
     border-radius: 5px;
+    &.tuff-sortable-possible-drop-zone {
+        border-color: var(--primary-color);
+    }
+    &.tuff-sortable-active-drop-zone {
+        background-color: var(--primary-bg);
+    }
     & a.block {
         display: block;
         padding: 1em;
