@@ -28,6 +28,9 @@ a:hover {
 
 body {
     margin: 0;
+    &.tuff-sortable-in-progress h2 {
+        color: var(--primary-color);
+    }
 }
 
 h1 {

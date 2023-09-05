@@ -52,6 +52,21 @@ class MyPart extends Part<NoState> {
 As demonstrated above, the sortable elements can still emit standard `click` events, 
 which will only occur when the sorting _doesn't_ happen during the same interaction.
 
+### Styling
+
+This plugin does not provide any styling out of the box. 
+It is up to the caller to implement rules for the following classes:
+
+**.tuff-sortable-dragging**: Gets added to the drag target when the dragging is in-progress.
+
+**.tuff-sortable-drop-cursor**: An element with this classes gets added to the drop zone and absolutely positioned to the location of the potential drop. Add a background to make it visible.
+
+**.tuff-sortable-possible-drop-zone**: Gets added to all possible drop zones when the dragging begins.
+
+**.tuff-sortable-active-drop-zone**: Gets added to a drop zone when the target is inside of it.
+
+**.tuff-sortable-in-progress**: Gets added to the `body` when the dragging is in-progress.
+
 
 ## Development
 

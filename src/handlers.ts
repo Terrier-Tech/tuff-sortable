@@ -24,6 +24,7 @@ const dragHighlightClass = 'tuff-sortable-dragging'
 const dropCursorClass = 'tuff-sortable-drop-cursor'
 const possibleDropZoneClass = 'tuff-sortable-possible-drop-zone'
 const activeDropZoneClass = 'tuff-sortable-active-drop-zone'
+const bodyDraggingClass = 'tuff-sortable-in-progress'
 const minCursorSize = 8
 
 class DropZone {
@@ -58,7 +59,7 @@ class DropZone {
         }))
         this.cursorSize = Math.max(Arrays.min(distances), minCursorSize)
 
-        log.info(`${this.flexDirection} drop zone has cursor size ${this.cursorSize}px`)
+        log.debug(`${this.flexDirection} drop zone has cursor size ${this.cursorSize}px`)
     }
 
     /**
@@ -226,6 +227,10 @@ export class DragHandler {
             y: evt.clientY
         }
 
+        // add a body class so that the client can change styling for the whole page while dragging
+        document.querySelector('body')?.classList.add(bodyDraggingClass)
+
+        // highlight the target itself
         this.dragTarget.classList.add(dragHighlightClass)
 
         // find all possible drop zones
@@ -302,6 +307,7 @@ export class DragHandler {
     dispose() {
         this.dragTarget.style.transform = ''
         this.dragTarget.classList.remove(dragHighlightClass)
+        document.querySelector('body')?.classList.remove(bodyDraggingClass)
         for (const dropZone of this.dropZones) {
             dropZone.dispose()
         }
