@@ -23,6 +23,7 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
 
     onMouseDown!: EventListener
     dragHandler?: DragHandler
+    elem?: HTMLElement
 
     async init() {
         log.info(`Initializing Sortable for container .${this.state.zoneClass} and target .${this.state.targetClass}`)
@@ -34,11 +35,11 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
             if (evt.target instanceof HTMLElement) {
                 const target = Dom.queryAncestorClass(evt.target, this.state.targetClass)
                 if (target) {
-                    const container = Dom.queryAncestorClass(target, this.state.zoneClass, false)
-                    if (container) {
+                    const zone = Dom.queryAncestorClass(target, this.state.zoneClass, false)
+                    if (zone && this.elem) {
                         evt.preventDefault()
                         evt.stopPropagation()
-                        this.dragHandler = new DragHandler(this, container, target, evt as MouseEvent)
+                        this.dragHandler = new DragHandler(this, this.elem, zone, target, evt as MouseEvent)
                     }
                 }
             }
@@ -47,6 +48,7 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
 
     update(elem: HTMLElement) {
         elem.addEventListener('mousedown', this.onMouseDown)
+        this.elem = elem
     }
 
     get zoneClass(): string {

@@ -47,9 +47,6 @@ class DropZone {
             if (elem instanceof HTMLElement) {
                 const box = elem.getBoundingClientRect()
                 this.possibleDropTargets.push({zone: this, elem, box: box, index})
-                // if (elem == dragTarget) {
-                //     this.dragIndex = index
-                // }
             }
         })
 
@@ -93,10 +90,10 @@ class DropZone {
         if (dropTarget) { // this should always be true
             this.elem.classList.add(activeDropZoneClass)
             if (dropTarget.elem == this.handler.dragTarget) {
-                log.info("The target is the closest, nothing to change")
+                log.debug("The target is the closest, nothing to change")
             } else {
                 this.computeInsert(dropTarget, diffedBox)
-                log.info(`Insert ${dropTarget.insertRelative} ${dropTarget.insertDirection} of ${dropTarget.index}`)
+                log.debug(`Insert ${dropTarget.insertRelative} ${dropTarget.insertDirection} of ${dropTarget.index}`)
             }
             return dropTarget
         }
@@ -223,9 +220,7 @@ export class DragHandler {
     dropTarget?: DropTarget
     targetBox: Box = {x: 0, y: 0, width: 0, height: 0}
 
-    dragIndex!: number
-
-    constructor(readonly plugin: SortablePlugin, readonly container: HTMLElement, readonly dragTarget: HTMLElement, evt: MouseEvent) {
+    constructor(readonly plugin: SortablePlugin, readonly container: HTMLElement, readonly fromZone: HTMLElement, readonly dragTarget: HTMLElement, evt: MouseEvent) {
         this.anchor = {
             x: evt.clientX,
             y: evt.clientY
@@ -234,7 +229,7 @@ export class DragHandler {
         this.dragTarget.classList.add(dragHighlightClass)
 
         // find all possible drop zones
-        document.querySelectorAll(`.${plugin.zoneClass}`).forEach(zoneElem => {
+        this.container.querySelectorAll(`.${plugin.zoneClass}`).forEach(zoneElem => {
             const zone = new DropZone(this, zoneElem as HTMLElement)
             this.dropZones.push(zone)
         })
@@ -261,7 +256,7 @@ export class DragHandler {
 
         // store the bounding box of each possible target
         this.targetBox = this.dragTarget.getBoundingClientRect()
-        log.info(`Starting DragHandler for .${plugin.targetClass} target with ${this.dropZones.length} drop zones`, container, dragTarget, evt)
+        log.info(`Starting DragHandler for .${plugin.targetClass} target with ${this.dropZones.length} drop zones`, fromZone, dragTarget, evt)
     }
 
     clearCursors() {
@@ -296,9 +291,9 @@ export class DragHandler {
         }
 
         // notify the plugin callback
-        const fromChildren = [...this.container.querySelectorAll(`.${this.plugin.targetClass}`).values()] as HTMLElement[]
+        const fromChildren = [...this.fromZone.querySelectorAll(`.${this.plugin.targetClass}`).values()] as HTMLElement[]
         const toChildren = [...dropTarget.zone.elem.querySelectorAll(`.${this.plugin.targetClass}`).values()] as HTMLElement[]
-        this.plugin.onSorted({fromZone: this.container, toZone: dropTarget.zone.elem, fromChildren, toChildren, target: dropTarget.elem})
+        this.plugin.onSorted({fromZone: this.fromZone, toZone: dropTarget.zone.elem, fromChildren, toChildren, target: dropTarget.elem})
     }
 
     /**
