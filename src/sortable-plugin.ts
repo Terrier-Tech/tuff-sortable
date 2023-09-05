@@ -21,7 +21,7 @@ export type SortEvent = {
 
 export default class SortablePlugin extends PartPlugin<SortableOptions> {
 
-    onMouseDown!: EventListener
+    onMouseDown!: (evt: MouseEvent) => any
     dragHandler?: DragHandler
     elem?: HTMLElement
 
@@ -30,7 +30,11 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
 
         // Use the same listener function for every `addEventListener` call
         // so that adding it more than once does nothing
-        this.onMouseDown = (evt: Event) => {
+        this.onMouseDown = (evt: MouseEvent) => {
+            if (evt.button != 0) {
+                // skip right clicks
+                return
+            }
             log.info(`Mouse down`, evt)
             if (evt.target instanceof HTMLElement) {
                 const target = Dom.queryAncestorClass(evt.target, this.state.targetClass)
