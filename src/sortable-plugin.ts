@@ -1,7 +1,7 @@
 import {PartPlugin} from "tuff-core/plugins"
 import {Logger} from "tuff-core/logging"
-import Dom from "./dom.ts"
-import {DragHandler} from "./handlers.ts"
+import Dom from "./dom"
+import {DragHandler} from "./handlers"
 
 const log = new Logger("SortablePlugin")
 

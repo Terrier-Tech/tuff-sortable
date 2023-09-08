@@ -1,9 +1,9 @@
-import Vecs, {Vec} from 'tuff-core/vecs.ts'
-import SortablePlugin from "./sortable-plugin.ts"
-import {Logger} from "tuff-core/logging.ts"
-import Html from 'tuff-core/html.ts'
-import Boxes, { Box } from 'tuff-core/boxes.ts'
-import Arrays from 'tuff-core/arrays.ts'
+import Vecs, {Vec} from 'tuff-core/vecs'
+import SortablePlugin from "./sortable-plugin"
+import {Logger} from "tuff-core/logging"
+import Html from 'tuff-core/html'
+import Boxes, { Box } from 'tuff-core/boxes'
+import Arrays from 'tuff-core/arrays'
 
 const log = new Logger("Handlers")
 
@@ -217,6 +217,7 @@ export class DragHandler {
     onMouseMove!: (evt: MouseEvent) => void
     onMouseUp!: (evt: MouseEvent) => void
 
+    fromChildren: HTMLElement[] = []
     dropZones: DropZone[] = []
     dropTarget?: DropTarget
     targetBox: Box = {x: 0, y: 0, width: 0, height: 0}
@@ -232,6 +233,9 @@ export class DragHandler {
 
         // highlight the target itself
         this.dragTarget.classList.add(dragHighlightClass)
+
+        // store the original sort order
+        this.fromChildren = [...this.fromZone.querySelectorAll(`.${this.plugin.targetClass}`).values()] as HTMLElement[]
 
         // find all possible drop zones
         this.container.querySelectorAll(`.${plugin.zoneClass}`).forEach(zoneElem => {
@@ -296,9 +300,8 @@ export class DragHandler {
         }
 
         // notify the plugin callback
-        const fromChildren = [...this.fromZone.querySelectorAll(`.${this.plugin.targetClass}`).values()] as HTMLElement[]
         const toChildren = [...dropTarget.zone.elem.querySelectorAll(`.${this.plugin.targetClass}`).values()] as HTMLElement[]
-        this.plugin.onSorted({fromZone: this.fromZone, toZone: dropTarget.zone.elem, fromChildren, toChildren, target: dropTarget.elem})
+        this.plugin.onSorted({fromZone: this.fromZone, toZone: dropTarget.zone.elem, fromChildren: this.fromChildren, toChildren, target: dropTarget.elem})
     }
 
     /**

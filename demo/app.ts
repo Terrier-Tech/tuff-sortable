@@ -1,8 +1,8 @@
 import {NoState, Part, PartTag} from "tuff-core/parts"
 import './style.css'
-import SortablePlugin from "../src/sortable-plugin.ts"
-import {Logger} from "tuff-core/logging.ts"
-import Messages from "tuff-core/messages.ts"
+import SortablePlugin from "../src/sortable-plugin"
+import {Logger} from "tuff-core/logging"
+import Messages from "tuff-core/messages"
 
 const log = new Logger("App")
 
