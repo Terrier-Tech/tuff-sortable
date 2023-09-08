@@ -39,8 +39,8 @@ class DropZone {
 
         // ensure the element is flex and get its flex direction
         if ('computedStyleMap' in elem) {
-            const computedStyle = elem.computedStyleMap()
-            if (computedStyle.get('display') != 'flex') {
+            const computedStyle = (elem as any).computedStyleMap() as any // don't know why we can't use StylePropertyMapReadOnly
+            if (computedStyle.get('display')?.toString() != 'flex') {
                 throw `Sortable containers must be display: flex, not ${computedStyle.get('display')}`
             }
             this.flexDirection = computedStyle.get('flex-direction')?.toString() as FlexDirection
