@@ -307,7 +307,7 @@ export class DragHandler {
 
         // notify the plugin callback
         const toChildren = [...dropTarget.zone.elem.querySelectorAll(`.${this.plugin.targetClass}`).values()] as HTMLElement[]
-        this.plugin.onSorted({fromZone: this.fromZone, toZone: dropTarget.zone.elem, fromChildren: this.fromChildren, toChildren, target: dropTarget.elem})
+        this.plugin.onSorted({fromZone: this.fromZone, toZone: dropTarget.zone.elem, fromChildren: this.fromChildren, toChildren, target: this.dragTarget})
     }
 
     /**
