@@ -38,11 +38,17 @@ class DropZone {
         elem.classList.add(possibleDropZoneClass)
 
         // ensure the element is flex and get its flex direction
-        const computedStyle = elem.computedStyleMap()
-        if (computedStyle.get('display') != 'flex') {
-            throw `Sortable containers must be display: flex, not ${computedStyle.get('display')}`
+        if ('computedStyleMap' in elem) {
+            const computedStyle = elem.computedStyleMap()
+            if (computedStyle.get('display') != 'flex') {
+                throw `Sortable containers must be display: flex, not ${computedStyle.get('display')}`
+            }
+            this.flexDirection = computedStyle.get('flex-direction')?.toString() as FlexDirection
         }
-        this.flexDirection = computedStyle.get('flex-direction')?.toString() as FlexDirection
+        else {
+            log.warn(`Browser does not support computedStyleMap, assuming flex-direction=row`)
+            this.flexDirection = 'row'
+        }
 
         elem.querySelectorAll(`.${handler.plugin.targetClass}`).forEach((elem, index) => {
             if (elem instanceof HTMLElement) {
