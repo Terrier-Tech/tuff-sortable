@@ -121,7 +121,18 @@ export default class App extends Part<NoState> {
         parent.div(".flex-container", container => {
             containerDef.blocks.forEach((blockDef, index) => {
                 container.a(".block", block => {
-                    block.label().text(blockDef.label)
+                    const rand = Math.random()
+                    if (rand > 0.75) {
+                        block.select(select => {
+                            select.option({value: blockDef.label, selected: true}).text(blockDef.label)
+                        })
+                    }
+                    else if (rand < 0.25) {
+                        block.input({type: 'text', value: blockDef.label})
+                    }
+                    else {
+                        block.label().text(blockDef.label)
+                    }
                 }).css(blockDef.style)
                     .emitClick(clickKey, {index})
             })

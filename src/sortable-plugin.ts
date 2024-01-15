@@ -32,11 +32,13 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
         // so that adding it more than once does nothing
         this.onMouseDown = (evt: MouseEvent) => {
             if (evt.button != 0) {
-                // skip right clicks
-                return
+                return // skip right clicks
             }
             log.info(`Mouse down`, evt)
             if (evt.target instanceof HTMLElement) {
+                if (evt.target.tagName == 'SELECT' || evt.target.tagName == 'INPUT') {
+                    return // skip inputs so that they can still be used
+                }
                 const target = Dom.queryAncestorClass(evt.target, this.state.targetClass)
                 if (target) {
                     const zone = Dom.queryAncestorClass(target, this.state.zoneClass, false)
