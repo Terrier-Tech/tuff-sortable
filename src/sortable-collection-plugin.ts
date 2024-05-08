@@ -20,7 +20,6 @@ export type SortCollectionEvent<TElementState> = {
 export default class SortableCollectionPlugin<TElementState> extends PartPlugin<SortableCollectionOptions<TElementState>> {
 
     onMouseDown!: (evt: MouseEvent) => any
-    dragHandler?: DragHandler
     elem?: HTMLElement
 
     async init() {
@@ -62,7 +61,7 @@ export default class SortableCollectionPlugin<TElementState> extends PartPlugin<
 
             evt.preventDefault()
             evt.stopPropagation()
-            this.dragHandler = new DragHandler(targetElem, zoneMap, this.onDrop.bind(this), evt as MouseEvent)
+            new DragHandler(targetElem, zoneMap, this.onDrop.bind(this), evt as MouseEvent)
         }
     }
 
