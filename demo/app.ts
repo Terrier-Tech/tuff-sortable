@@ -1,5 +1,6 @@
 import {NoState, Part, PartTag} from "tuff-core/parts"
 import './style.css'
+import SortableCollectionPlugin from "../src/sortable-collection-plugin"
 import SortablePlugin from "../src/sortable-plugin"
 import {Logger} from "tuff-core/logging"
 import Messages from "tuff-core/messages"
@@ -92,12 +93,26 @@ export default class App extends Part<NoState> {
 
     async init() {
         this.makePlugin(SortablePlugin, {
-            zoneClass: 'flex-container',
-            targetClass: 'block',
+            zoneClass: 'drop-zone',
+            targetClass: 'draggable-block',
             onSorted: (plugin, evt) => {
                 log.info(`Sorted children`, plugin, evt)
             }
         })
+
+        this.makePlugin(SortableCollectionPlugin<CollectionElement>, {
+            collectionName: 'sortable-collection',
+            onSorted: (plugin, evt) => {
+                log.info(`Sorted collection`, plugin, evt)
+            }
+        })
+
+        this.assignCollection('sortable-collection', CollectionElement, [
+            { str: "alpha" },
+            { str: "bravo" },
+            { str: "charlie" },
+            { str: "delta" },
+        ])
 
         this.onClick(clickKey, m => {
             log.info(`Clicked block ${m.data.index}`, m)
@@ -115,12 +130,16 @@ export default class App extends Part<NoState> {
             this.renderContainer(row, columnContainer1)
             this.renderContainer(row, columnContainer2)
         })
+        parent.h2().text("Collections")
+        this.renderCollection(parent, 'sortable-collection')
+            .class('flex-container')
+            .css({ flexDirection: 'column' })
     }
 
     renderContainer(parent: PartTag, containerDef: ContainerDef) {
-        parent.div(".flex-container", container => {
+        parent.div(".flex-container.drop-zone", container => {
             containerDef.blocks.forEach((blockDef, index) => {
-                container.a(".block", block => {
+                container.a(".block.draggable-block", block => {
                     const rand = Math.random()
                     if (rand > 0.75) {
                         block.select(select => {
@@ -139,6 +158,20 @@ export default class App extends Part<NoState> {
         }).css(containerDef.style)
     }
 
+}
+
+class CollectionElement extends Part<{ str: string }> {
+
+    get parentClasses(): Array<string> {
+        return ['block', ...super.parentClasses]
+    }
+
+    render(parent: PartTag) {
+        parent.div('.spread-content', row => {
+            row.label().text(this.id)
+            row.label().text(this.state.str)
+        })
+    }
 }
 
 
