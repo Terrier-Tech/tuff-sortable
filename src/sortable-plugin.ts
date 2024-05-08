@@ -26,7 +26,7 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
     elem?: HTMLElement
 
     async init() {
-        log.info(`Initializing Sortable for container .${this.state.zoneClass} and target .${this.state.targetClass}`)
+        log.debug(`Initializing Sortable for container .${this.state.zoneClass} and target .${this.state.targetClass}`)
 
         // Use the same listener function for every `addEventListener` call
         // so that adding it more than once does nothing
@@ -34,7 +34,7 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
             if (evt.button != 0) {
                 return // skip right clicks
             }
-            log.info(`Mouse down`, evt)
+            log.debug(`Mouse down`, evt)
             if (evt.target instanceof HTMLElement) {
                 if (evt.target.tagName == 'SELECT' || evt.target.tagName == 'INPUT') {
                     return // skip inputs so that they can still be used

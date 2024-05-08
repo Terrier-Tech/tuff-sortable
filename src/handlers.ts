@@ -259,7 +259,7 @@ export class DragHandler {
         }
 
         this.onMouseUp = (evt: MouseEvent) => {
-            log.info(`Drag mouse up`, evt)
+            log.debug(`Drag mouse up`, evt)
             if (this.dropTarget) {
                 this.performDrop(this.dropTarget)
             }
@@ -271,7 +271,7 @@ export class DragHandler {
 
         // store the bounding box of each possible target
         this.targetBox = this.dragTarget.getBoundingClientRect()
-        log.info(`Starting DragHandler for .${plugin.targetClass} target with ${this.dropZones.length} drop zones`, fromZone, dragTarget, evt)
+        log.debug(`Starting DragHandler for .${plugin.targetClass} target with ${this.dropZones.length} drop zones`, fromZone, dragTarget, evt)
     }
 
     clearCursors() {
@@ -295,7 +295,7 @@ export class DragHandler {
 
 
     performDrop(dropTarget: DropTarget) {
-        log.info(`Moving drag target ${dropTarget.insertRelative} drop target ${dropTarget.index}`)
+        log.debug(`Moving drag target ${dropTarget.insertRelative} drop target ${dropTarget.index}`)
         if (dropTarget.insertRelative == 'before') {
             // move the drag target to before the drop target
             dropTarget.elem.before(this.dragTarget)
