@@ -57,6 +57,12 @@ h1 {
     }
 }
 
+.spread-content {
+    display: flex;
+    gap: 1em;
+    justify-content: space-evenly;
+}
+
 .flex-container {
     display: flex;
     gap: 1em;
@@ -72,7 +78,7 @@ h1 {
     &.tuff-sortable-active-drop-zone {
         background-color: var(--primary-bg);
     }
-    & a.block {
+    & .block {
         display: block;
         padding: 1em;
         border: 1px solid currentColor;
