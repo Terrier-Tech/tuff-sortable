@@ -223,6 +223,7 @@ export class DragHandler {
     anchor!: Vec
     onMouseMove!: (evt: MouseEvent) => void
     onMouseUp!: (evt: MouseEvent) => void
+    onScroll!: (evt: Event) => void
 
     dropZones: DropZone[] = []
     dropTarget?: DropTarget
@@ -235,8 +236,8 @@ export class DragHandler {
         evt: MouseEvent
     ) {
         this.anchor = {
-            x: evt.clientX,
-            y: evt.clientY
+            x: evt.pageX,
+            y: evt.pageY
         }
 
         // add a body class so that the client can change styling for the whole page while dragging
@@ -250,8 +251,19 @@ export class DragHandler {
         })
 
         // capture all mouse move events while this interaction is happening
+        let lastPoint = { x: evt.pageX, y: evt.pageY }
+        let lastScrollPos  = { x: window.scrollX, y: window.scrollY }
         this.onMouseMove = (evt: MouseEvent) => {
-            const p = {x: evt.x, y: evt.clientY}
+            lastPoint = {x: evt.pageX, y: evt.pageY}
+            lastScrollPos = { x: window.scrollX, y: window.scrollY }
+            const diff = Vecs.subtract(lastPoint, this.anchor)
+            dragTarget.style.transform = `translate(${diff.x}px,${diff.y}px)`
+            this.findDropZone(diff)
+        }
+
+        this.onScroll = (_: Event) => {
+            const scrollDiff = { x: window.scrollX - lastScrollPos.x, y: window.scrollY - lastScrollPos.y }
+            const p = { x: lastPoint.x + scrollDiff.x, y: lastPoint.y + scrollDiff.y }
             const diff = Vecs.subtract(p, this.anchor)
             dragTarget.style.transform = `translate(${diff.x}px,${diff.y}px)`
             this.findDropZone(diff)
@@ -270,6 +282,7 @@ export class DragHandler {
 
         window.addEventListener('mousemove', this.onMouseMove)
         window.addEventListener('mouseup', this.onMouseUp)
+        window.addEventListener('scroll', this.onScroll)
 
         // store the bounding box of each possible target
         this.targetBox = this.dragTarget.getBoundingClientRect()
@@ -313,5 +326,6 @@ export class DragHandler {
         this.dropZones = []
         window.removeEventListener('mousemove', this.onMouseMove)
         window.removeEventListener('mouseup', this.onMouseUp)
+        window.removeEventListener('scroll', this.onScroll)
     }
 }
