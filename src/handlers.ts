@@ -1,15 +1,14 @@
-import Vecs, {Vec} from 'tuff-core/vecs'
-import SortablePlugin from "./sortable-plugin"
-import {Logger} from "tuff-core/logging"
-import Html from 'tuff-core/html'
-import Boxes, { Box } from 'tuff-core/boxes'
 import Arrays from 'tuff-core/arrays'
+import Boxes, { Box } from 'tuff-core/boxes'
+import Html from 'tuff-core/html'
+import { Logger } from "tuff-core/logging"
+import Vecs, { Vec } from 'tuff-core/vecs'
 
 const log = new Logger("Handlers")
 
 type InsertDirection = 'left' | 'right' | 'top' | 'bottom'
 
-type DropTarget = {
+export type DropTarget = {
     zone: DropZone
     elem: HTMLElement
     box: Box
@@ -30,10 +29,14 @@ const minCursorSize = 8
 class DropZone {
     flexDirection!: FlexDirection
     cursorSize!: number
-    possibleDropTargets: DropTarget[] = []
+    possibleDropTargets: DropTarget[]
     zoneBox!: Box
 
-    constructor(readonly handler: DragHandler, readonly elem: HTMLElement) {
+    constructor(
+        readonly handler: DragHandler,
+        readonly elem: HTMLElement,
+        possibleTargetElems: HTMLElement[]
+    ) {
         this.zoneBox = elem.getBoundingClientRect()
         elem.classList.add(possibleDropZoneClass)
 
@@ -50,11 +53,9 @@ class DropZone {
             this.flexDirection = 'row'
         }
 
-        elem.querySelectorAll(`.${handler.plugin.targetClass}`).forEach((elem, index) => {
-            if (elem instanceof HTMLElement) {
-                const box = elem.getBoundingClientRect()
-                this.possibleDropTargets.push({zone: this, elem, box: box, index})
-            }
+        this.possibleDropTargets = possibleTargetElems.map((elem, index) => {
+            const box = elem.getBoundingClientRect()
+            return {zone: this, elem, box: box, index}
         })
 
         // and compute the gap by finding the minimum distance between boxes
@@ -223,12 +224,16 @@ export class DragHandler {
     onMouseMove!: (evt: MouseEvent) => void
     onMouseUp!: (evt: MouseEvent) => void
 
-    fromChildren: HTMLElement[] = []
     dropZones: DropZone[] = []
     dropTarget?: DropTarget
     targetBox: Box = {x: 0, y: 0, width: 0, height: 0}
 
-    constructor(readonly plugin: SortablePlugin, readonly container: HTMLElement, readonly fromZone: HTMLElement, readonly dragTarget: HTMLElement, evt: MouseEvent) {
+    constructor(
+        readonly dragTarget: HTMLElement,
+        toZones: Map<HTMLElement, HTMLElement[]>,
+        readonly onDrop: (dropTarget: DropTarget, dragTarget: HTMLElement) => void,
+        evt: MouseEvent
+    ) {
         this.anchor = {
             x: evt.clientX,
             y: evt.clientY
@@ -240,15 +245,9 @@ export class DragHandler {
         // highlight the target itself
         this.dragTarget.classList.add(dragHighlightClass)
 
-        // store the original sort order
-        this.fromChildren = [...this.fromZone.querySelectorAll(`.${this.plugin.targetClass}`).values()] as HTMLElement[]
-
-        // find all possible drop zones
-        this.container.querySelectorAll(`.${plugin.zoneClass}`).forEach(zoneElem => {
-            const zone = new DropZone(this, zoneElem as HTMLElement)
-            this.dropZones.push(zone)
+        this.dropZones = Array.from(toZones, ([zoneElem, targetElems]) => {
+            return new DropZone(this, zoneElem, targetElems)
         })
-
 
         // capture all mouse move events while this interaction is happening
         this.onMouseMove = (evt: MouseEvent) => {
@@ -260,10 +259,13 @@ export class DragHandler {
 
         this.onMouseUp = (evt: MouseEvent) => {
             log.debug(`Drag mouse up`, evt)
-            if (this.dropTarget) {
-                this.performDrop(this.dropTarget)
+            try {
+                if (this.dropTarget) {
+                    this.performDrop(this.dropTarget)
+                }
+            } finally {
+                this.dispose()
             }
-            this.dispose()
         }
 
         window.addEventListener('mousemove', this.onMouseMove)
@@ -271,7 +273,7 @@ export class DragHandler {
 
         // store the bounding box of each possible target
         this.targetBox = this.dragTarget.getBoundingClientRect()
-        log.debug(`Starting DragHandler for .${plugin.targetClass} target with ${this.dropZones.length} drop zones`, fromZone, dragTarget, evt)
+        log.debug(`Starting DragHandler for .${Array.from(dragTarget.classList).join('.')} target with ${this.dropZones.length} drop zones`, dragTarget, evt)
     }
 
     clearCursors() {
@@ -295,19 +297,7 @@ export class DragHandler {
 
 
     performDrop(dropTarget: DropTarget) {
-        log.debug(`Moving drag target ${dropTarget.insertRelative} drop target ${dropTarget.index}`)
-        if (dropTarget.insertRelative == 'before') {
-            // move the drag target to before the drop target
-            dropTarget.elem.before(this.dragTarget)
-        }
-        else {
-            // move the drag target to after the drop target
-            dropTarget.elem.after(this.dragTarget)
-        }
-
-        // notify the plugin callback
-        const toChildren = [...dropTarget.zone.elem.querySelectorAll(`.${this.plugin.targetClass}`).values()] as HTMLElement[]
-        this.plugin.onSorted({fromZone: this.fromZone, toZone: dropTarget.zone.elem, fromChildren: this.fromChildren, toChildren, target: this.dragTarget})
+        this.onDrop(dropTarget, this.dragTarget)
     }
 
     /**
@@ -320,6 +310,7 @@ export class DragHandler {
         for (const dropZone of this.dropZones) {
             dropZone.dispose()
         }
+        this.dropZones = []
         window.removeEventListener('mousemove', this.onMouseMove)
         window.removeEventListener('mouseup', this.onMouseUp)
     }

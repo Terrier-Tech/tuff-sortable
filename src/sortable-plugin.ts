@@ -1,14 +1,14 @@
 import {PartPlugin} from "tuff-core/plugins"
 import {Logger} from "tuff-core/logging"
 import Dom from "tuff-core/dom"
-import {DragHandler} from "./handlers"
+import {DragHandler, DropTarget} from "./handlers"
 
 const log = new Logger("SortablePlugin")
 
 export type SortableOptions = {
     zoneClass: string
     targetClass: string
-    onSorted: (plugin: SortablePlugin, evt: SortEvent) => any
+    onSorted: (plugin: SortablePlugin, evt: SortEvent) => void
 }
 
 export type SortEvent = {
@@ -22,7 +22,6 @@ export type SortEvent = {
 export default class SortablePlugin extends PartPlugin<SortableOptions> {
 
     onMouseDown!: (evt: MouseEvent) => any
-    dragHandler?: DragHandler
     elem?: HTMLElement
 
     async init() {
@@ -36,7 +35,7 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
             }
             log.debug(`Mouse down`, evt)
             if (evt.target instanceof HTMLElement) {
-                if (evt.target.tagName == 'SELECT' || evt.target.tagName == 'INPUT') {
+                if (evt.target.tagName == 'SELECT' || evt.target.tagName == 'INPUT' || evt.target.tagName == 'TEXTAREA') {
                     return // skip inputs so that they can still be used
                 }
                 const target = Dom.queryAncestorClass(evt.target, this.state.targetClass)
@@ -45,11 +44,25 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
                     if (zone && this.elem) {
                         evt.preventDefault()
                         evt.stopPropagation()
-                        this.dragHandler = new DragHandler(this, this.elem, zone, target, evt as MouseEvent)
+                        const zoneMap = this.createZoneMap(this.elem)
+                        new DragHandler(target, zoneMap, this.onDrop.bind(this), evt as MouseEvent)
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Maps each possible zone to all of the possible targets within that zone
+     * @param elem
+     */
+    createZoneMap(elem: HTMLElement): Map<HTMLElement, HTMLElement[]> {
+        const zoneMap = new Map<HTMLElement, HTMLElement[]>()
+        elem.querySelectorAll<HTMLElement>(`.${this.state.zoneClass}`).forEach(zoneElem => {
+            let targets = Array.from(zoneElem.querySelectorAll<HTMLElement>(`.${this.state.targetClass}`))
+            zoneMap.set(zoneElem, targets)
+        })
+        return zoneMap
     }
 
     update(elem: HTMLElement) {
@@ -57,20 +70,28 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
         this.elem = elem
     }
 
-    get zoneClass(): string {
-        return this.state.zoneClass
-    }
-
-    get targetClass(): string {
-        return this.state.targetClass
-    }
-
     /**
      * The handler calls this, which then calls the state callback.
-     * @param evt
      */
-    onSorted(evt: SortEvent) {
-        this.state.onSorted(this, evt)
+    onDrop(dropTarget: DropTarget, dragTarget: HTMLElement) {
+        const fromZone = Dom.queryAncestorClass(dragTarget, this.state.zoneClass, false)
+        if (!fromZone) throw new Error(`Given drag target did not come from a zone with class ${this.state.zoneClass}`)
+
+        const fromChildren = Array.from(fromZone.querySelectorAll<HTMLElement>(`.${this.state.targetClass}`))
+
+        log.debug(`Moving drag target ${dropTarget.insertRelative} drop target ${dropTarget.index}`)
+        if (dropTarget.insertRelative == 'before') {
+            // move the drag target to before the drop target
+            dropTarget.elem.before(dragTarget)
+        }
+        else {
+            // move the drag target to after the drop target
+            dropTarget.elem.after(dragTarget)
+        }
+
+        // notify the plugin callback
+        const toChildren = Array.from(dropTarget.zone.elem.querySelectorAll<HTMLElement>(`.${this.state.targetClass}`))
+        this.state.onSorted(this, {fromZone, fromChildren, toZone: dropTarget.zone.elem, toChildren, target: dragTarget})
     }
 
 }
