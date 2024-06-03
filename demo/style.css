@@ -97,3 +97,36 @@ h1 {
         border-radius: 4px;
     }
 }
+
+.sortable-table {
+    border: 1px solid currentColor;
+    background-color: #f2f2f2;
+    border-collapse: collapse;
+    overflow: hidden;
+    width: 100%;
+    margin-bottom: 50px;
+    thead tr {
+        border-bottom: 1px solid currentColor;
+    }
+    tbody {
+        position: relative;
+        tr {
+            height: 60px;
+            &.drop-target-top-border {
+                border-top: 3px solid var(--color)
+            }
+            &.drop-target-bottom-border {
+                border-bottom: 3px solid var(--color)
+            }
+        }
+        tr:nth-of-type(even) {
+            background-color: white;
+        }
+        tr:nth-of-type(odd) {
+            background-color: #fafafa;
+        }
+    }
+    .tuff-sortable-drop-cursor {
+        background-color: var(--primary-color) !important;
+    }
+}

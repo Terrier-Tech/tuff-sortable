@@ -44,9 +44,14 @@ class DropZone {
         if ('computedStyleMap' in elem) {
             const computedStyle = (elem as any).computedStyleMap() as any // don't know why we can't use StylePropertyMapReadOnly
             if (computedStyle.get('display')?.toString() != 'flex') {
-                throw `Sortable containers must be display: flex, not ${computedStyle.get('display')}`
+                if (elem instanceof HTMLTableSectionElement) {
+                    this.flexDirection = "column"
+                } else {
+                    throw `Sortable containers must be display: flex, not ${computedStyle.get('display')} Otherwise, containers must be a table body.`
+                }
+            } else {
+                this.flexDirection = computedStyle.get('flex-direction')?.toString() as FlexDirection
             }
-            this.flexDirection = computedStyle.get('flex-direction')?.toString() as FlexDirection
         }
         else {
             log.warn(`Browser does not support computedStyleMap, assuming flex-direction=row`)
@@ -163,7 +168,11 @@ class DropZone {
                 }
             }
         }
-        this.addDropCursor(dropTarget)
+        if (this.elem instanceof HTMLTableSectionElement) {
+            this.addTableDropCursor(dropTarget)
+        } else {
+            this.addDropCursor(dropTarget)
+        }
     }
 
     /**
@@ -211,6 +220,34 @@ class DropZone {
             })
         })
         this.elem.append(cursor)
+    }
+
+    addTableDropCursor(dropTarget: DropTarget) {
+        const numberOfColumns = this.elem.firstElementChild?.children.length
+
+        const cursor = document.createElement('div')
+        cursor.classList.add(dropCursorClass)
+
+        cursor.style.height = '5px'
+        cursor.style.zIndex = '1000'
+        cursor.style.position = 'absolute'
+        cursor.style.width = '100%'
+
+        switch (dropTarget.insertDirection) {
+            case 'top':
+                this.elem.insertBefore(cursor, dropTarget.elem)
+                break
+            case 'bottom':
+                this.elem.insertBefore(cursor, dropTarget.elem.nextSibling)
+                break
+        }
+
+        if (numberOfColumns) {
+            for (let i = 0; i < numberOfColumns; i++) {
+                const td = document.createElement('td')
+                cursor.append(td)
+            }
+        }
     }
 }
 
