@@ -5,6 +5,7 @@ import SortablePlugin from "../src/sortable-plugin"
 import {Logger} from "tuff-core/logging"
 import Messages from "tuff-core/messages"
 import SortableTableElement from "./sortable_table_element"
+import HandlesDemo from "./handles-demo"
 
 const log = new Logger("App")
 
@@ -91,7 +92,11 @@ for (let i = 0; i < numBlocks; i++) {
 const clickKey = Messages.typedKey<{index: number}>()
 
 export default class App extends Part<NoState> {
+
+    _handlesPart!: HandlesDemo
+
     _tablePart!: SortableTableElement
+    
     async init() {
         this.makePlugin(SortablePlugin, {
             zoneClass: 'drop-zone',
@@ -114,6 +119,8 @@ export default class App extends Part<NoState> {
             { str: "charlie" },
             { str: "delta" },
         ])
+
+        this._handlesPart = this.makePart(HandlesDemo, {})
 
         this._tablePart = this.makePart(SortableTableElement, {})
 
@@ -138,6 +145,8 @@ export default class App extends Part<NoState> {
             .class('flex-container')
             .css({ flexDirection: 'column' })
         parent.part(this._tablePart)
+
+        parent.part(this._handlesPart)
     }
 
     renderContainer(parent: PartTag, containerDef: ContainerDef) {

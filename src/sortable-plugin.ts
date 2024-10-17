@@ -8,6 +8,7 @@ const log = new Logger("SortablePlugin")
 export type SortableOptions = {
     zoneClass: string
     targetClass: string
+    handleClass?: string
     onSorted: (plugin: SortablePlugin, evt: SortEvent) => void
 }
 
@@ -39,7 +40,9 @@ export default class SortablePlugin extends PartPlugin<SortableOptions> {
                     return // skip inputs so that they can still be used
                 }
                 const target = Dom.queryAncestorClass(evt.target, this.state.targetClass)
-                if (target) {
+                // filter by the handle class if present
+                const handled = target && (!this.state.handleClass?.length || Dom.queryAncestorClass(evt.target, this.state.handleClass))
+                if (handled) {
                     const zone = Dom.queryAncestorClass(target, this.state.zoneClass, false)
                     if (zone && this.elem) {
                         evt.preventDefault()

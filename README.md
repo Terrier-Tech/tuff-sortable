@@ -52,6 +52,23 @@ class MyPart extends Part<NoState> {
 As demonstrated above, the sortable elements can still emit standard `click` events, 
 which will only occur when the sorting _doesn't_ happen during the same interaction.
 
+
+### Handles
+
+You can optionally pass a `handleClass` to the plugin to restrict dragging to a specific child of the target.
+
+```typescript
+this.makePlugin(SortablePlugin, {
+    zoneClass: 'handle-drop-zone',
+    targetClass: 'handle-draggable-block',
+    handleClass: 'handle',
+    onSorted: (plugin, evt) => {
+        log.info(`Sorted children`, plugin, evt)
+    }
+} as SortableOptions)
+```
+
+
 ### Styling
 
 This plugin does not provide any styling out of the box. 
@@ -79,7 +96,7 @@ Like all Tuff libraries, packages are Typescript source-only.
 
 ## License (MIT)
 
-&copy; 2023 <a href="https://terrier.tech">Terrier Technologies LLC</a>
+&copy; 2024 <a href="https://terrier.tech">Terrier Technologies LLC</a>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
 documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
