@@ -64,7 +64,7 @@ export default class SortableCollectionPlugin<TElementState> extends PartPlugin<
 
             evt.preventDefault()
             evt.stopPropagation()
-            new DragHandler(targetElem, zoneMap, this.onDrop.bind(this), evt as MouseEvent)
+            new DragHandler(targetElem, zoneMap, this.onDrop.bind(this), evt)
         }
     }
 
