@@ -7,6 +7,7 @@ const log = new Logger("SortableCollectionPlugin")
 
 export type SortableCollectionOptions<TElementState> = {
     collectionName: string
+    handleClass?: string
     onSorted: (plugin: SortableCollectionPlugin<TElementState>, evt: SortCollectionEvent<TElementState>) => void
 }
 
@@ -36,6 +37,8 @@ export default class SortableCollectionPlugin<TElementState> extends PartPlugin<
             if (!(evt.target instanceof HTMLElement)) return
             // skip inputs so that they can still be used
             if (evt.target.tagName == 'SELECT' || evt.target.tagName == 'INPUT' || evt.target.tagName == 'TEXTAREA') return
+
+            if (this.state.handleClass?.length && !evt.target.closest(`.${this.state.handleClass}`)) return
 
             const collectionElem = this.part.getCollectionContainer(this.state.collectionName)
 
