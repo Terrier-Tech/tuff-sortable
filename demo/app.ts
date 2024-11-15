@@ -1,6 +1,6 @@
 import {NoState, Part, PartTag} from "tuff-core/parts"
 import './style.css'
-import SortableCollectionPlugin from "../src/sortable-collection-plugin"
+import SortableCollectionPlugin, { SortableCollectionOptions } from "../src/sortable-collection-plugin"
 import SortablePlugin from "../src/sortable-plugin"
 import {Logger} from "tuff-core/logging"
 import Messages from "tuff-core/messages"
@@ -106,12 +106,14 @@ export default class App extends Part<NoState> {
             }
         })
 
-        this.makePlugin(SortableCollectionPlugin<CollectionElement>, {
+        const collectionPluginOpts: SortableCollectionOptions<CollectionElement> = {
             collectionName: 'sortable-collection',
+            handleClass: 'handle',
             onSorted: (plugin, evt) => {
                 log.info(`Sorted collection`, plugin, evt)
             }
-        })
+        }
+        this.makePlugin(SortableCollectionPlugin<CollectionElement>, collectionPluginOpts)
 
         this.assignCollection('sortable-collection', CollectionElement, [
             { str: "alpha" },
@@ -181,8 +183,9 @@ class CollectionElement extends Part<{ str: string }> {
 
     render(parent: PartTag) {
         parent.div('.spread-content', row => {
-            row.label().text(this.id)
-            row.label().text(this.state.str)
+            row.div('.handle').text("&#8801;")
+            row.div().text(this.id)
+            row.div().text(this.state.str)
         })
     }
 }
