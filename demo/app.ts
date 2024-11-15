@@ -1,11 +1,11 @@
-import {NoState, Part, PartTag} from "tuff-core/parts"
-import './style.css'
-import SortableCollectionPlugin, { SortableCollectionOptions } from "../src/sortable-collection-plugin"
-import SortablePlugin from "../src/sortable-plugin"
-import {Logger} from "tuff-core/logging"
+import { Logger } from "tuff-core/logging"
 import Messages from "tuff-core/messages"
-import SortableTableElement from "./sortable_table_element"
+import { NoState, Part, PartTag } from "tuff-core/parts"
+import './style.css'
+import SortableCollectionPlugin from "../src/sortable-collection-plugin"
+import SortablePlugin from "../src/sortable-plugin"
 import HandlesDemo from "./handles-demo"
+import SortableTableElement from "./sortable_table_element"
 
 const log = new Logger("App")
 
@@ -106,14 +106,13 @@ export default class App extends Part<NoState> {
             }
         })
 
-        const collectionPluginOpts: SortableCollectionOptions<CollectionElement> = {
+        this.makePlugin(SortableCollectionPlugin<CollectionElement>, {
             collectionName: 'sortable-collection',
             handleClass: 'handle',
             onSorted: (plugin, evt) => {
                 log.info(`Sorted collection`, plugin, evt)
             }
-        }
-        this.makePlugin(SortableCollectionPlugin<CollectionElement>, collectionPluginOpts)
+        })
 
         this.assignCollection('sortable-collection', CollectionElement, [
             { str: "alpha" },

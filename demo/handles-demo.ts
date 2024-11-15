@@ -1,5 +1,5 @@
 import { NoState, Part, PartTag } from "tuff-core/parts"
-import SortablePlugin, { SortableOptions } from "../src/sortable-plugin"
+import SortablePlugin from "../src/sortable-plugin"
 import { Logger } from "tuff-core/logging"
 
 const log = new Logger("Handles Demo")
@@ -20,7 +20,7 @@ export default class HandlesDemo extends Part<NoState> {
             onSorted: (plugin, evt) => {
                 log.info(`Sorted children`, plugin, evt)
             }
-        } as SortableOptions)
+        })
     }
 
 
